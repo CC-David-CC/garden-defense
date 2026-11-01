@@ -20,3 +20,8 @@ paused. Changed and conflicting files remain visible without replacing play.
 No authored `garden-advisor.riv` is supplied. The advisor is an explicit
 development fallback, so the Rive acceptance gate remains open. Physical-phone
 testing and a complete three-map, thirty-wave release playthrough remain open.
+
+The isolated `tests/garden-defense-save-review.test.mjs` checks cancelled and
+confirmed map changes and a save destination edited during a delayed write,
+plus sync and reopen at desktop and emulated-phone sizes. Physical touch and
+all ten waves on each map remain untested.

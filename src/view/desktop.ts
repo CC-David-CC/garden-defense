@@ -133,7 +133,7 @@ export async function startView(host:Host,signal:AbortSignal):Promise<ViewHandle
  const say=(message:string)=>{if(valid())status.textContent=message};
  const setDirty=(value:boolean)=>{dirty=value;windowState.dirty=value};
  const mark=()=>{setDirty(true);revision++};
- const selectSite=(index:number)=>{selectedSite=index;session.openBuildMenu(index);siteLabel.textContent=`Selected site ${index+1} · range preview on`;refresh()};
+ const selectSite=(index:number)=>{if(busy||!valid())return;selectedSite=index;session.openBuildMenu(index);siteLabel.textContent=`Selected site ${index+1} · range preview on`;refresh()};
 
  function togglePause(){
   if(busy||!valid())return;
@@ -156,16 +156,22 @@ export async function startView(host:Host,signal:AbortSignal):Promise<ViewHandle
   session.setSpeed(session.speed===1?2:1);mark();
   say(`Simulation speed set to ${session.speed}×.`);refresh();
  }
- function pickMap(){
-  const mapId=Number(map.value);
-  const replace=()=>{
-   if(busy||!valid())return;
+ async function pickMap():Promise<void>{
+  const mapId=Number(map.value),prior=session,atRevision=revision,before=encodeSave(session);
+  if(busy||!valid()){map.value=String(session.mapId);return}
+  if(mapId===session.mapId)return;
+  busy=true;map.disabled=true;paused=true;refresh();
+  try{
+   if(dirty&&!await host.ui.confirm('Switch gardens and discard unsaved progress?',{title:'Unsaved garden',confirmLabel:'Switch garden',cancelLabel:'Keep garden',danger:true,signal})){
+    map.value=String(session.mapId);say('Current garden kept and paused.');return;
+   }
+   if(!valid())return;
+   if(session!==prior||revision!==atRevision||encodeSave(session)!==before){map.value=String(session.mapId);say('The garden changed while confirming. Try again.');return}
    clearWatch();savedPath=null;savedVersion=null;session=new GardenDefenseSession(`garden-${crypto.randomUUID()}`,mapId);
    paused=true;selectedSite=0;lastWave=0;setDirty(false);revision++;path.value='/Garden Defense.game.json';if(host.w)delete host.w.launchContext;
    say(`Garden map ${mapId+1} ready. Press Resume and start a wave.`);refresh();
-  };
-  if(dirty){const before=revision;void host.ui.confirm('Switch gardens and discard unsaved progress?',{title:'Unsaved garden',confirmLabel:'Switch garden',cancelLabel:'Keep garden',danger:true,signal})
-   .then(ok=>{if(ok&&valid()&&revision===before)replace()})}else replace();
+  }catch(error){map.value=String(session.mapId);say('Could not switch garden: '+(error instanceof Error?error.message:'unknown error'))}
+  finally{busy=false;map.disabled=false}
  }
 
  function refresh(){
@@ -241,7 +247,7 @@ export async function startView(host:Host,signal:AbortSignal):Promise<ViewHandle
   if(distance<.8)selectSite(best);
  };
  stageWrap.addEventListener('pointerdown',boardClick);
- map.addEventListener('change',pickMap);
+ map.addEventListener('change',()=>void pickMap());
  sound.addEventListener('change',()=>{volume.disabled=!sound.checked;audio.setMuted(!sound.checked);if(sound.checked)audio.unlock()});
  volume.addEventListener('input',()=>audio.setVolume(Number(volume.value)/100));
  const suspend=()=>{if(!paused){paused=true;say('Garden paused when its window lost attention. Press Resume when ready.');refresh()}};
@@ -267,7 +273,7 @@ export async function startView(host:Host,signal:AbortSignal):Promise<ViewHandle
  async function chooseFolder(){try{const folderPath=await host.storage.pickFolder({signal});if(folderPath===null||!valid())return;const context=await host.storage.mirrorFileContext();if(!valid()||!context.valid())return;path.value=context.path((folderPath==='/'?'':folderPath)+'/'+context.name(path.value.split('/').pop()||'Garden Defense.game.json'))}catch(error){say('Could not choose folder: '+(error instanceof Error?error.message:'unknown error'))}}
  async function save(){
   if(busy||!valid())return;busy=true;const wasDirty=dirty;setDirty(true);paused=true;refresh();const captured=revision,text=encodeSave(session),requested=path.value;let committed=false;
-  try{const context=await host.storage.mirrorFileContext(),target=context.path(requested);if(!target.toLowerCase().endsWith('.game.json'))throw Error('Use a .game.json file name.');let expected:string|null=null;try{const old=context.files.stat?await context.files.stat(target):await context.files.read(target);if(old.status==='conflict')throw Error('Resolve the conflict in Files first.');if(target===savedPath&&savedVersion){if(old.version!==savedVersion)throw Error('The saved garden changed. Save a copy or reopen it.')}else if(!await host.ui.confirm('Replace '+target+'?',{title:'Replace saved garden',confirmLabel:'Replace',cancelLabel:'Cancel',danger:true,signal})){say('Save cancelled.');return}expected=old.version}catch(error){if(!(error instanceof Error)||error.message!=='File not found.')throw error;if(target===savedPath&&savedVersion)throw Error('The saved garden was removed. Save a copy or reopen it.')}if(!valid()||!context.valid())return;const result=await context.files.write(target,new TextEncoder().encode(text),expected);if(!valid()||!context.valid())return;savedPath=target;savedVersion=result.version;path.value=target;const newer=revision!==captured||encodeSave(session)!==text;setDirty(newer);committed=true;if(host.w){host.w.launchContext=Object.freeze({version:1,storage:'mirror',path:target,owner});host.w.title=target.split('/').pop()+' — Garden Defense'}watch(context,target,result.version);say(result.status==='conflict'?'Checkpoint saved with conflicting copies. Resolve them in Files.':newer?'Saved an earlier checkpoint; newer garden changes are unsaved.':'Garden checkpoint saved to My files; syncing with the server.')}catch(error){say('Could not save garden: '+(error instanceof Error?error.message:'unknown error'))}finally{if(!committed&&valid()&&revision===captured)setDirty(wasDirty);busy=false}
+  try{const context=await host.storage.mirrorFileContext(),target=context.path(requested);if(!target.toLowerCase().endsWith('.game.json'))throw Error('Use a .game.json file name.');let expected:string|null=null;try{const old=context.files.stat?await context.files.stat(target):await context.files.read(target);if(old.status==='conflict')throw Error('Resolve the conflict in Files first.');if(target===savedPath&&savedVersion){if(old.version!==savedVersion)throw Error('The saved garden changed. Save a copy or reopen it.')}else if(!await host.ui.confirm('Replace '+target+'?',{title:'Replace saved garden',confirmLabel:'Replace',cancelLabel:'Cancel',danger:true,signal})){say('Save cancelled.');return}expected=old.version}catch(error){if(!(error instanceof Error)||error.message!=='File not found.')throw error;if(target===savedPath&&savedVersion)throw Error('The saved garden was removed. Save a copy or reopen it.')}if(!valid()||!context.valid())return;const result=await context.files.write(target,new TextEncoder().encode(text),expected);if(!valid()||!context.valid())return;savedPath=target;savedVersion=result.version;if(path.value===requested)path.value=target;const newer=revision!==captured||encodeSave(session)!==text;setDirty(newer);committed=true;if(host.w){host.w.launchContext=Object.freeze({version:1,storage:'mirror',path:target,owner});host.w.title=target.split('/').pop()+' — Garden Defense'}watch(context,target,result.version);say(result.status==='conflict'?'Checkpoint saved with conflicting copies. Resolve them in Files.':newer?'Saved an earlier checkpoint; newer garden changes are unsaved.':'Garden checkpoint saved to My files; syncing with the server.')}catch(error){say('Could not save garden: '+(error instanceof Error?error.message:'unknown error'))}finally{if(!committed&&valid()&&revision===captured)setDirty(wasDirty);busy=false}
  }
  async function open(selected?:string){
   if(busy||!valid())return;busy=true;paused=true;refresh();const before=revision,beforeSave=encodeSave(session);const unchanged=()=>revision===before&&encodeSave(session)===beforeSave;
