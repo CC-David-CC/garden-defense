@@ -1,0 +1,22 @@
+# Save and load — Garden Defense
+
+## Promise shown to the user
+
+Exact logical snapshot at tick boundary, including active wave entities and projectile timers.
+
+## Authoritative fields
+
+- map id
+- tower placements and upgrades
+- currency and base health
+- next wave and RNG
+- completed map medals
+- active wave snapshot if saved mid-wave
+
+Use the versioned envelope from [SAVE-LOAD.md](../../docs/SAVE-LOAD.md), app id `garden-defense`, a content/rules version and any required engine fingerprint. Derived render positions, DOM, texture handles, Rive artboards and in-flight worker jobs are excluded. XR anchors, tracked poses and hardware identities are excluded.
+
+Pause at a committed game boundary, cancel uncommitted input, capture only the documented snapshot/checkpoint and report what was actually written. A visible Save operation must not quietly write an older checkpoint without saying so. On load validate size, app/version, finite values, ids and invariants, prepare a replacement, then commit; failure leaves the current game intact. The game resumes paused with an explicit Resume.
+
+Restart/load invalidates callbacks, held inputs and queued AI results from the previous state.
+
+File integration is unbound until the real host services are inspected. Do not invent host method names, atomic write guarantees or another hidden document store. Use explicit Save As/conflict handling appropriate to the actual provider.

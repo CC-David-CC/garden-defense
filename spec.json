@@ -1,0 +1,122 @@
+{
+  "category": "01-phaser-arcade",
+  "id": "garden-defense",
+  "title": "Garden Defense",
+  "genre": "Single-player tower defense",
+  "pitch": "Defend a garden path from toy pests using three complementary towers and clear upgrade choices.",
+  "capabilities": [
+    "Path-following enemies and target selection",
+    "Particles, projectile pools and overlays",
+    "Rive advisor plus explicit UI state"
+  ],
+  "rules": [
+    "Fixed path, no player path blocking. Towers: rapid, splash and slow; upgrades have visible cost/effect.",
+    "A wave starts only on player confirmation. Pause-to-build is allowed. Health reaches zero = defeat; complete all waves = win.",
+    "Target ties break by stable enemy id; damage and economy changes are transactional."
+  ],
+  "content": "Three maps, ten waves per map, three towers with two upgrades each and two difficulty presets.",
+  "state": [
+    "map id",
+    "tower placements and upgrades",
+    "currency and base health",
+    "next wave and RNG",
+    "completed map medals",
+    "active wave snapshot if saved mid-wave"
+  ],
+  "actions": [
+    {
+      "command": "build",
+      "desktop": "Click tower then legal site",
+      "phone": "Tap tower then legal site",
+      "xr": "Not applicable; plays as a flat browser app."
+    },
+    {
+      "command": "upgrade",
+      "desktop": "Select tower and choose upgrade",
+      "phone": "Bottom-sheet upgrade buttons",
+      "xr": "Not applicable; plays as a flat browser app."
+    },
+    {
+      "command": "start-wave",
+      "desktop": "Start wave button",
+      "phone": "Start wave button",
+      "xr": "Not applicable; plays as a flat browser app."
+    },
+    {
+      "command": "speed",
+      "desktop": "1×/2× buttons",
+      "phone": "1×/2× buttons",
+      "xr": "Not applicable; plays as a flat browser app."
+    }
+  ],
+  "rive": {
+    "asset": "garden-advisor.riv",
+    "role": "Advisor, wave banner and animated upgrade confirmation.",
+    "properties": {
+      "health": "number 0..1",
+      "wave": "integer",
+      "coins": "integer >=0"
+    },
+    "events": [
+      "waveClear",
+      "baseHit",
+      "purchase"
+    ],
+    "states": [
+      "idle",
+      "warn",
+      "cheer"
+    ],
+    "artboard": "Main",
+    "stateMachine": "Presentation",
+    "assetStatus": "to_author"
+  },
+  "polish": [
+    "Range preview before purchase",
+    "Slow/armor indicators use icons as well as color",
+    "Fast mode changes simulation rate explicitly, not damage per frame"
+  ],
+  "tests": [
+    "Currency cannot go negative on double-tap purchase.",
+    "Sold tower cannot fire a delayed projectile.",
+    "2× changes rate not logical outcomes for the same command schedule.",
+    "Empty wave cannot award twice.",
+    "Save mid-wave preserves enemy progress and pending projectiles.",
+    "Upgrade menu does not leak a build click into the map."
+  ],
+  "loop": [
+    "commit build/upgrade transactions",
+    "spawn wave schedule using simulation time",
+    "advance path progress and select deterministic targets",
+    "resolve attacks/status expiry",
+    "commit wave result and derive advisor state"
+  ],
+  "save": "Exact logical snapshot at tick boundary, including active wave entities and projectile timers.",
+  "wave": 3,
+  "specVersion": 1,
+  "status": "planned",
+  "implementation": "not_started",
+  "runtimeTests": "not_run",
+  "engine": "Phaser",
+  "singlePlayer": true,
+  "phoneRequired": true,
+  "mountContract": {
+    "export": "mount",
+    "synchronous": true,
+    "returns": [
+      "element",
+      "dispose"
+    ],
+    "productionEntry": "index.mjs",
+    "suppliedEntry": "index.pseudo.mjs"
+  },
+  "xrRequired": false,
+  "riveRequired": true,
+  "riveAssetIncluded": false,
+  "documentKind": "Exact logical snapshot at tick boundary, including active wave entities and projectile timers.",
+  "sources": [
+    "S01",
+    "S02",
+    "S03"
+  ]
+}
