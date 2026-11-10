@@ -25,3 +25,7 @@ The isolated `tests/garden-defense-save-review.test.mjs` checks cancelled and
 confirmed map changes and a save destination edited during a delayed write,
 plus sync and reopen at desktop and emulated-phone sizes. Physical touch and
 all ten waves on each map remain untested.
+
+## Design requirements
+
+The original [design brief, controls, save rules, artwork and acceptance plans](design/README.md) are retained as reference. They describe targets; the implementation and qualification status above takes precedence.
