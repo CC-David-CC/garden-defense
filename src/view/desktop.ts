@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import {SynthAudio} from '../audio/synth.js';
+import {SynthAudio} from '../audio/synth.ts';
 import {
  ENEMIES,
  GardenDefenseSession,
@@ -12,7 +12,7 @@ import {
  sessionFromSave,
  sitesForMap,
  type TowerRole,
-} from '../model/garden.js';
+} from '../model/garden.ts';
 
 interface FileRecord{data:Uint8Array;version:string;status?:string}
 interface FileContext{
@@ -64,6 +64,7 @@ export async function startView(host:Host,signal:AbortSignal):Promise<ViewHandle
  let disposed=false,busy=false,paused=true,dirty=false,revision=0,selectedSite=0,lastWave=0;
  let savedPath:string|null=null,savedVersion:string|null=null,unwatch=()=>{},watchSerial=0,watchCheck=0;
  let game:Phaser.Game|null=null,graphics:Phaser.GameObjects.Graphics|null=null;
+ let stageResizeObserver:ResizeObserver|null=null;
  let observedWindow:HTMLElement|null=null,windowObserver:MutationObserver|null=null;
  const audio=new SynthAudio();
  const element=make('section','garden-view'),toolbar=make('div','garden-toolbar'),layout=make('div','garden-layout');
@@ -232,6 +233,7 @@ export async function startView(host:Host,signal:AbortSignal):Promise<ViewHandle
   if(!valid())return;
   try{
    game=new Phaser.Game({type:Phaser.CANVAS,audio:{noAudio:true},parent:stageWrap,width:VIEW_WIDTH,height:VIEW_HEIGHT,backgroundColor:'#24402a',scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},scene:{create(){graphics=this.add.graphics();this.scale.getParentBounds();this.scale.refresh()},update}});
+   if(typeof ResizeObserver!=='undefined'){stageResizeObserver=new ResizeObserver(()=>{game?.scale.getParentBounds();game?.scale.refresh()});stageResizeObserver.observe(stageWrap);}
    watchWindow();
    refresh();
   }catch(error){say('Could not start the garden view: '+(error instanceof Error?error.message:'unknown error'))}
@@ -291,6 +293,7 @@ export async function startView(host:Host,signal:AbortSignal):Promise<ViewHandle
   dispose(){
    if(disposed)return;disposed=true;busy=true;watchSerial++;watchCheck++;unwatch();windowObserver?.disconnect();windowObserver=null;
    stageWrap.removeEventListener('pointerdown',boardClick);window.removeEventListener('blur',suspend);document.removeEventListener('visibilitychange',visibility);
+   stageResizeObserver?.disconnect();stageResizeObserver=null;
    audio.dispose();game?.destroy(true);game=null;graphics=null;element.replaceChildren();
   },
  };

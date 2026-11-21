@@ -1,1 +1,206 @@
-.garden-defense{display:flex;flex-direction:column;gap:8px;padding:8px;overflow:auto;background:#eff5ec;color:#17301d}.garden-toolbar,.garden-controls,.garden-save-fields{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.garden-toolbar select,.garden-toolbar button,.garden-controls button,.garden-save-fields button{min-height:40px}.garden-layout{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}.garden-stage-wrap{flex:1 1 420px;min-height:240px;position:relative;background:#24402a}.garden-stage-wrap canvas{width:100%;height:auto;display:block;touch-action:none}.garden-side{display:flex;flex-direction:column;gap:6px;min-width:190px;max-width:260px}.garden-advisor,.garden-summary{padding:8px;border-radius:8px;background:#fff}.garden-advisor span,.garden-note,.garden-warning{font-size:12px}.garden-warning{padding:8px;background:#fff4cf;border:1px solid #b27a15}.garden-save-fields input{min-width:170px;flex:1}.garden-settings label,.garden-save summary,.garden-help summary{display:block;margin:5px 0}.garden-controls button{flex:1 1 82px;touch-action:none}.garden-status{font-size:13px}.garden-view{gap:7px}.garden-site-label{font-size:13px;font-weight:600}@media(max-width:600px){.garden-defense{padding:5px}.garden-side{max-width:none;min-width:100%}.garden-toolbar button,.garden-controls button,.garden-toolbar select,.garden-save-fields button{min-height:44px}.garden-stage-wrap{min-height:220px}}
+:root {
+  --gd-bg: #eff5ec;
+  --gd-text: #17301d;
+  --gd-panel: #ffffff;
+  --gd-stage: #24402a;
+  --gd-border: rgba(0, 0, 0, 0.12);
+  --gd-touch-target: 44px;
+}
+
+.garden-defense {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  overflow: auto;
+  background: var(--gd-bg);
+  color: var(--gd-text);
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+}
+
+.garden-toolbar,
+.garden-controls,
+.garden-save-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.garden-toolbar select,
+.garden-toolbar button,
+.garden-controls button,
+.garden-save-fields button {
+  min-height: 40px;
+}
+
+.garden-layout {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+}
+
+.garden-stage-wrap {
+  flex: 1 1 420px;
+  min-height: 240px;
+  position: relative;
+  background: var(--gd-stage);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.garden-stage-wrap canvas {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+.garden-side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 200px;
+  max-width: 280px;
+  flex: 0 1 260px;
+}
+
+.garden-advisor,
+.garden-summary {
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--gd-panel);
+  border: 1px solid var(--gd-border);
+}
+
+.garden-advisor span,
+.garden-note,
+.garden-warning {
+  font-size: 12px;
+}
+
+.garden-warning {
+  padding: 8px;
+  background: #fff4cf;
+  border: 1px solid #b27a15;
+  border-radius: 6px;
+}
+
+.garden-save-fields input {
+  min-width: 170px;
+  flex: 1;
+}
+
+.garden-settings label,
+.garden-save summary,
+.garden-help summary {
+  display: block;
+  margin: 5px 0;
+  cursor: pointer;
+}
+
+.garden-controls button {
+  flex: 1 1 82px;
+  touch-action: manipulation;
+  min-height: var(--gd-touch-target);
+}
+
+.garden-status {
+  font-size: 13px;
+}
+
+.garden-view {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.garden-site-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Tier 1: Simplified Phone Display (< 768px) */
+@media (max-width: 768px) {
+  .garden-defense {
+    padding: 6px;
+    gap: 6px;
+  }
+  .garden-layout {
+    flex-direction: column;
+  }
+  .garden-side {
+    max-width: none;
+    min-width: 100%;
+    width: 100%;
+  }
+  .garden-toolbar button,
+  .garden-controls button,
+  .garden-toolbar select,
+  .garden-save-fields button {
+    min-height: var(--gd-touch-target);
+  }
+  .garden-stage-wrap {
+    min-height: 220px;
+    width: 100%;
+  }
+}
+
+/* Tier 2: Full 1080p Desktop Display (1024px to 2559px) */
+@media (min-width: 1024px) and (max-width: 2559px) {
+  .garden-side {
+    min-width: 260px;
+    max-width: 320px;
+  }
+  .garden-stage-wrap {
+    min-height: 480px;
+  }
+}
+
+/* Tier 3: Complete 4K UHD Display (>= 2560px) */
+@media (min-width: 2560px) {
+  :root {
+    --gd-touch-target: 56px;
+  }
+  .garden-defense {
+    padding: 16px;
+    gap: 16px;
+    font-size: 18px;
+  }
+  .garden-side {
+    min-width: 420px;
+    max-width: 500px;
+    gap: 12px;
+  }
+  .garden-stage-wrap {
+    min-height: 800px;
+  }
+  .garden-toolbar button,
+  .garden-controls button,
+  .garden-toolbar select,
+  .garden-save-fields button {
+    min-height: 52px;
+    font-size: 18px;
+    padding: 8px 16px;
+  }
+  .garden-advisor,
+  .garden-summary {
+    padding: 16px;
+    font-size: 18px;
+  }
+  .garden-advisor span,
+  .garden-note,
+  .garden-warning {
+    font-size: 16px;
+  }
+}

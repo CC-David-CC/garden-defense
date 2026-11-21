@@ -1,4 +1,4 @@
-import { Rng } from "./rng.js";
+import { Rng } from "./rng.ts";
 
 export type TowerRole = "rapid" | "splash" | "slow";
 export type EnemyKind = "bug" | "beetle" | "moth";

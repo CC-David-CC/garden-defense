@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "./test-shim.ts";
 import {
   GardenDefenseSession,
   decodeSave,
   encodeSave,
   sessionFromSave,
-} from "../src/model/garden.js";
+} from "../src/model/garden.ts";
 
 describe("GardenDefenseSession rules", () => {
   it("currency cannot go negative on a double-tap purchase", () => {
